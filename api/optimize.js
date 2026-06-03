@@ -55,11 +55,13 @@ Details: ${details && details.trim() ? details : '(none provided — infer sensi
 Desired tone: ${tone || 'Warm & friendly'}
 ${keyword && keyword.trim() ? 'Must include this keyword naturally: ' + keyword : ''}
 
+IMPORTANT formatting rule for the description: write it as PLAIN TEXT only. Do NOT use any markdown — no asterisks, no **bold**, no # headings, no markdown bullets. Separate paragraphs with line breaks. If you list details, start each line with "• " (a bullet character), never with "*" or "-". The text must paste cleanly into a marketplace description box exactly as written.
+
 Respond with ONLY a valid JSON object in exactly this shape:
 {
   "title": "the optimized listing title",
   "tags": ["tag1", "tag2"],
-  "description": "the full optimized description, ready to paste",
+  "description": "the full optimized description in plain text, ready to paste",
   "why": "one short sentence on the single biggest improvement you made"
 }`;
 
