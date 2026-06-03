@@ -1,0 +1,285 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>ListLift — Listing Optimizer</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600;9..144,900&family=Hanken+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet" />
+<style>
+  :root {
+    --paper: #f4ede2;
+    --ink: #211c16;
+    --ink-soft: #5c5347;
+    --accent: #e2552b;
+    --accent-deep: #b83d18;
+    --green: #2f6f4f;
+    --card: #fbf7f0;
+    --line: #ddd1bf;
+    --shadow: rgba(33, 28, 22, 0.12);
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: 'Hanken Grotesk', sans-serif;
+    background:
+      radial-gradient(circle at 12% 8%, rgba(226,85,43,0.07), transparent 40%),
+      radial-gradient(circle at 88% 0%, rgba(47,111,79,0.06), transparent 35%),
+      var(--paper);
+    color: var(--ink);
+    min-height: 100vh;
+    line-height: 1.5;
+    padding: 32px 20px 80px;
+  }
+  .wrap { max-width: 760px; margin: 0 auto; }
+  header { text-align: center; margin-bottom: 38px; }
+  .badge {
+    display: inline-block; font-size: 12px; font-weight: 600;
+    letter-spacing: 0.14em; text-transform: uppercase; color: var(--accent-deep);
+    border: 1px solid var(--accent); border-radius: 999px; padding: 5px 14px; margin-bottom: 18px;
+  }
+  h1 {
+    font-family: 'Fraunces', serif; font-weight: 900;
+    font-size: clamp(40px, 8vw, 68px); line-height: 0.95;
+    letter-spacing: -0.02em; margin-bottom: 14px;
+  }
+  h1 em { font-style: italic; color: var(--accent); }
+  .sub { font-size: 17px; color: var(--ink-soft); max-width: 480px; margin: 0 auto; }
+  .card {
+    background: var(--card); border: 1px solid var(--line); border-radius: 18px;
+    padding: 26px; box-shadow: 0 18px 40px -28px var(--shadow);
+  }
+  label { display: block; font-weight: 600; font-size: 14px; margin-bottom: 8px; letter-spacing: 0.01em; }
+  .field { margin-bottom: 20px; }
+  .market-row { display: flex; gap: 10px; flex-wrap: wrap; }
+  .market-btn {
+    flex: 1; min-width: 90px; font-family: inherit; font-size: 15px; font-weight: 600;
+    padding: 12px 8px; border: 1.5px solid var(--line); background: transparent;
+    color: var(--ink-soft); border-radius: 12px; cursor: pointer; transition: all 0.15s ease;
+  }
+  .market-btn:hover { border-color: var(--accent); color: var(--ink); }
+  .market-btn.active { background: var(--ink); color: var(--card); border-color: var(--ink); }
+  input[type="text"], textarea, select {
+    width: 100%; font-family: inherit; font-size: 15px; color: var(--ink);
+    background: #fff; border: 1.5px solid var(--line); border-radius: 12px;
+    padding: 12px 14px; transition: border-color 0.15s ease;
+  }
+  input[type="text"]:focus, textarea:focus, select:focus { outline: none; border-color: var(--accent); }
+  textarea { resize: vertical; min-height: 110px; }
+  .two-col { display: flex; gap: 16px; }
+  .two-col .field { flex: 1; }
+  .go-btn {
+    width: 100%; font-family: 'Fraunces', serif; font-weight: 600; font-size: 19px;
+    color: #fff; background: var(--accent); border: none; border-radius: 14px;
+    padding: 16px; cursor: pointer; transition: background 0.15s ease, transform 0.05s ease;
+  }
+  .go-btn:hover { background: var(--accent-deep); }
+  .go-btn:active { transform: translateY(1px); }
+  .go-btn:disabled { opacity: 0.55; cursor: not-allowed; }
+  #results { margin-top: 30px; display: none; }
+  #results.show { display: block; animation: rise 0.4s ease; }
+  @keyframes rise { from { opacity: 0; transform: translateY(14px);} to {opacity:1; transform:none;} }
+  .result-block {
+    background: var(--card); border: 1px solid var(--line); border-radius: 16px;
+    padding: 20px 22px; margin-bottom: 16px;
+  }
+  .result-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
+  .result-label { font-family: 'Fraunces', serif; font-weight: 600; font-size: 18px; }
+  .meta { font-size: 12px; color: var(--ink-soft); }
+  .copy-btn {
+    font-family: inherit; font-size: 13px; font-weight: 600; color: var(--accent-deep);
+    background: rgba(226,85,43,0.08); border: 1px solid rgba(226,85,43,0.3);
+    border-radius: 8px; padding: 5px 11px; cursor: pointer; transition: all 0.15s ease;
+  }
+  .copy-btn:hover { background: rgba(226,85,43,0.16); }
+  .copy-btn.copied { color: var(--green); border-color: var(--green); background: rgba(47,111,79,0.1); }
+  .opt-title { font-size: 17px; font-weight: 600; }
+  .opt-desc { font-size: 15px; white-space: pre-wrap; color: var(--ink); }
+  .tags { display: flex; flex-wrap: wrap; gap: 8px; }
+  .tag {
+    font-size: 13px; font-weight: 500; background: rgba(47,111,79,0.1); color: var(--green);
+    border: 1px solid rgba(47,111,79,0.25); border-radius: 999px; padding: 5px 12px;
+  }
+  .why { font-size: 14px; color: var(--ink-soft); font-style: italic; }
+  .loader { text-align: center; padding: 30px; display: none; color: var(--ink-soft); }
+  .loader.show { display: block; }
+  .spinner {
+    width: 30px; height: 30px; border: 3px solid var(--line); border-top-color: var(--accent);
+    border-radius: 50%; margin: 0 auto 12px; animation: spin 0.8s linear infinite;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  .error {
+    display: none; background: rgba(226,85,43,0.1); border: 1px solid var(--accent);
+    color: var(--accent-deep); border-radius: 12px; padding: 14px 16px; margin-top: 20px; font-size: 14px;
+  }
+  .error.show { display: block; }
+  footer { text-align: center; margin-top: 40px; font-size: 13px; color: var(--ink-soft); }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <span class="badge">Sell more · Rank higher</span>
+    <h1>List<em>Lift</em></h1>
+    <p class="sub">Paste a rough product description. Get a polished, keyword-optimized listing ready to publish.</p>
+  </header>
+
+  <div class="card">
+    <div class="field">
+      <label>Where are you selling?</label>
+      <div class="market-row" id="marketRow">
+        <button type="button" class="market-btn active" data-market="Etsy">Etsy</button>
+        <button type="button" class="market-btn" data-market="Amazon">Amazon</button>
+        <button type="button" class="market-btn" data-market="eBay">eBay</button>
+      </div>
+    </div>
+
+    <div class="field">
+      <label for="product">What are you selling?</label>
+      <input type="text" id="product" placeholder="e.g. Handmade ceramic coffee mug, matte blue glaze" />
+    </div>
+
+    <div class="field">
+      <label for="details">Key details (materials, size, who it's for, what makes it special)</label>
+      <textarea id="details" placeholder="e.g. Stoneware, holds 350ml, dishwasher safe, hand-thrown, comes in a gift box. Great for coffee lovers and as a housewarming gift."></textarea>
+    </div>
+
+    <div class="two-col">
+      <div class="field">
+        <label for="tone">Tone</label>
+        <select id="tone">
+          <option>Warm &amp; friendly</option>
+          <option>Premium &amp; refined</option>
+          <option>Fun &amp; playful</option>
+          <option>Clean &amp; professional</option>
+        </select>
+      </div>
+      <div class="field">
+        <label for="keywords">Must-have keyword (optional)</label>
+        <input type="text" id="keywords" placeholder="e.g. handmade gift" />
+      </div>
+    </div>
+
+    <button class="go-btn" id="goBtn">Optimize my listing →</button>
+  </div>
+
+  <div class="loader" id="loader">
+    <div class="spinner"></div>
+    Writing your optimized listing…
+  </div>
+
+  <div class="error" id="error"></div>
+  <div id="results"></div>
+
+  <footer>Built with ListLift · Always review before publishing</footer>
+</div>
+
+<script>
+  let selectedMarket = 'Etsy';
+
+  document.getElementById('marketRow').addEventListener('click', (e) => {
+    const btn = e.target.closest('.market-btn');
+    if (!btn) return;
+    document.querySelectorAll('.market-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    selectedMarket = btn.dataset.market;
+  });
+
+  document.getElementById('goBtn').addEventListener('click', optimize);
+
+  async function optimize() {
+    const product = document.getElementById('product').value.trim();
+    const details = document.getElementById('details').value.trim();
+    const tone = document.getElementById('tone').value;
+    const keyword = document.getElementById('keywords').value.trim();
+    const btn = document.getElementById('goBtn');
+    const loader = document.getElementById('loader');
+    const errorBox = document.getElementById('error');
+    const results = document.getElementById('results');
+
+    errorBox.classList.remove('show');
+    results.classList.remove('show');
+    results.innerHTML = '';
+
+    if (!product) { showError('Please tell me what you\'re selling first.'); return; }
+
+    btn.disabled = true;
+    loader.classList.add('show');
+
+    try {
+      const response = await fetch('/api/optimize', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ product, details, tone, keyword, market: selectedMarket })
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        showError(data.error || 'Something went wrong. Please try again.');
+      } else {
+        renderResults(data);
+      }
+    } catch (err) {
+      showError('Could not reach the server. Please try again in a moment.');
+    } finally {
+      btn.disabled = false;
+      loader.classList.remove('show');
+    }
+  }
+
+  function showError(msg) {
+    const errorBox = document.getElementById('error');
+    errorBox.textContent = msg;
+    errorBox.classList.add('show');
+  }
+
+  function renderResults(d) {
+    const results = document.getElementById('results');
+    const titleLen = (d.title || '').length;
+    const tagsHtml = (d.tags || []).map(t => `<span class="tag">${escapeHtml(t)}</span>`).join('');
+    const tagsCopy = (d.tags || []).join(', ');
+
+    results.innerHTML = `
+      <div class="result-block">
+        <div class="result-head">
+          <span class="result-label">Optimized title</span>
+          <button class="copy-btn" data-copy="${escapeAttr(d.title)}">Copy</button>
+        </div>
+        <div class="opt-title">${escapeHtml(d.title)}</div>
+        <div class="meta">${titleLen} characters</div>
+      </div>
+      <div class="result-block">
+        <div class="result-head">
+          <span class="result-label">Tags &amp; keywords</span>
+          <button class="copy-btn" data-copy="${escapeAttr(tagsCopy)}">Copy all</button>
+        </div>
+        <div class="tags">${tagsHtml}</div>
+      </div>
+      <div class="result-block">
+        <div class="result-head">
+          <span class="result-label">Description</span>
+          <button class="copy-btn" data-copy="${escapeAttr(d.description)}">Copy</button>
+        </div>
+        <div class="opt-desc">${escapeHtml(d.description)}</div>
+      </div>
+      ${d.why ? `<div class="result-block"><span class="why">💡 ${escapeHtml(d.why)}</span></div>` : ''}
+    `;
+    results.classList.add('show');
+
+    results.querySelectorAll('.copy-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        navigator.clipboard.writeText(btn.dataset.copy);
+        const orig = btn.textContent;
+        btn.textContent = 'Copied ✓';
+        btn.classList.add('copied');
+        setTimeout(() => { btn.textContent = orig; btn.classList.remove('copied'); }, 1600);
+      });
+    });
+  }
+
+  function escapeHtml(s){return (s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
+  function escapeAttr(s){return (s||'').replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
+</script>
+</body>
+</html>

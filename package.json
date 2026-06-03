@@ -1,0 +1,9 @@
+{
+  "name": "listlift",
+  "version": "1.0.0",
+  "private": true,
+  "description": "AI-powered e-commerce listing optimizer",
+  "engines": {
+    "node": ">=18"
+  }
+}
